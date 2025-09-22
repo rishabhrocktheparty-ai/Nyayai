@@ -1,0 +1,223 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  CITIZEN
+  COURT_EMPLOYEE
+  LAWYER
+  JUDGE
+  ADMIN
+}
+
+model User {
+  id             String    @id @default(cuid())
+  email          String    @unique
+  phone          String?   @unique
+  password       String
+  role           Role
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+  citizenProfile CitizenProfile?
+  courtProfile   CourtEmployee?
+  lawyerProfile  LawyerProfile?
+  judgeProfile   JudgeProfile?
+  notifications  Notification[]
+  auditLogs      AuditLog[]
+  attendances    Attendance[]
+  documents      Document[]
+}
+
+model CitizenProfile {
+  id         String        @id @default(cuid())
+  user       User          @relation(fields: [userId], references: [id])
+  userId     String        @unique
+  name       String
+  dob        DateTime?
+  cases      Case[]
+  notebook   NotebookEntry[]
+  podcasts   Podcast[]
+}
+
+model CourtEmployee {
+  id        String  @id @default(cuid())
+  user      User    @relation(fields: [userId], references: [id])
+  userId    String  @unique
+  courtId   String?
+  tasks     Task[]
+}
+
+model LawyerProfile {
+  id          String    @id @default(cuid())
+  user        User      @relation(fields: [userId], references: [id])
+  userId      String    @unique
+  barId       String?
+  subscription Subscription?
+  assignments LawyerAssignment[]
+}
+
+model JudgeProfile {
+  id      String    @id @default(cuid())
+  user    User      @relation(fields: [userId], references: [id])
+  userId  String    @unique
+  hearings Hearing[]
+}
+
+model Subscription {
+  id          String   @id @default(cuid())
+  lawyer      LawyerProfile @relation(fields: [lawyerId], references: [id])
+  lawyerId    String   @unique
+  provider    String
+  status      String
+  startedAt   DateTime @default(now())
+  expiresAt   DateTime?
+}
+
+model Case {
+  id          String    @id @default(cuid())
+  title       String
+  description String?
+  citizen     CitizenProfile @relation(fields: [citizenId], references: [id])
+  citizenId   String
+  parties     Party[]
+  hearings    Hearing[]
+  documents   Document[]
+  evidences   Evidence[]
+  analyses    Analysis[]
+  assignments LawyerAssignment[]
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+}
+
+model Party {
+  id      String @id @default(cuid())
+  name    String
+  role    String
+  case    Case   @relation(fields: [caseId], references: [id])
+  caseId  String
+}
+
+model LawyerAssignment {
+  id        String @id @default(cuid())
+  case      Case   @relation(fields: [caseId], references: [id])
+  caseId    String
+  lawyer    LawyerProfile @relation(fields: [lawyerId], references: [id])
+  lawyerId  String
+  role      String
+  drafts    Draft[]
+}
+
+model Draft {
+  id        String @id @default(cuid())
+  assignment LawyerAssignment @relation(fields: [assignmentId], references: [id])
+  assignmentId String
+  content   String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Hearing {
+  id        String @id @default(cuid())
+  case      Case   @relation(fields: [caseId], references: [id])
+  caseId    String
+  judge     JudgeProfile @relation(fields: [judgeId], references: [id])
+  judgeId   String
+  date      DateTime
+  attendance Attendance[]
+  minutes   String?
+}
+
+model Attendance {
+  id        String @id @default(cuid())
+  hearing   Hearing @relation(fields: [hearingId], references: [id])
+  hearingId String
+  user      User    @relation(fields: [userId], references: [id])
+  userId    String
+  status    String
+  timestamp DateTime @default(now())
+}
+
+model Task {
+  id         String @id @default(cuid())
+  title      String
+  description String?
+  assignee   CourtEmployee @relation(fields: [assigneeId], references: [id])
+  assigneeId String
+  dueDate    DateTime?
+  completed  Boolean @default(false)
+  createdAt  DateTime @default(now())
+}
+
+model Document {
+  id           String   @id @default(cuid())
+  case         Case     @relation(fields: [caseId], references: [id])
+  caseId       String
+  filename     String
+  url          String
+  version      Int      @default(1)
+  hash         String
+  uploadedBy   User     @relation(fields: [uploadedById], references: [id])
+  uploadedById String
+  createdAt    DateTime @default(now())
+}
+
+model Evidence {
+  id        String @id @default(cuid())
+  case      Case   @relation(fields: [caseId], references: [id])
+  caseId    String
+  hash      String
+  anchorId  String?
+  anchoredAt DateTime?
+  createdAt DateTime @default(now())
+}
+
+model Analysis {
+  id        String @id @default(cuid())
+  case      Case   @relation(fields: [caseId], references: [id])
+  caseId    String
+  result    String
+  meta      Json?
+  createdAt DateTime @default(now())
+}
+
+model NotebookEntry {
+  id        String @id @default(cuid())
+  citizen   CitizenProfile @relation(fields: [citizenId], references: [id])
+  citizenId String
+  content   String
+  createdAt DateTime @default(now())
+}
+
+model Podcast {
+  id        String @id @default(cuid())
+  citizen   CitizenProfile @relation(fields: [citizenId], references: [id])
+  citizenId String
+  url       String
+  createdAt DateTime @default(now())
+}
+
+model Notification {
+  id        String @id @default(cuid())
+  user      User   @relation(fields: [userId], references: [id])
+  userId    String
+  type      String
+  message   String
+  meta      Json?
+  status    String  @default("queued")
+  createdAt DateTime @default(now())
+  sentAt    DateTime?
+}
+
+model AuditLog {
+  id        String @id @default(cuid())
+  action    String
+  userId    String?
+  user      User?  @relation(fields: [userId], references: [id])
+  details   String?
+  createdAt DateTime @default(now())
+}

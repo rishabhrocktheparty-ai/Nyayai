@@ -1,0 +1,53 @@
+{
+  "name": "nyay-setu",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint .",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "prisma:generate": "prisma generate",
+    "prisma:migrate": "prisma migrate dev --name init",
+    "workers:analysis": "ts-node workers/analysisWorker.ts",
+    "workers:podcast": "ts-node workers/podcastWorker.ts",
+    "workers:notification": "ts-node workers/notificationWorker.ts",
+    "workers:anchor": "ts-node workers/anchorWorker.ts"
+  },
+  "dependencies": {
+    "@aws-sdk/client-s3": "^3.637.0",
+    "@aws-sdk/s3-request-presigner": "^3.637.0",
+    "@prisma/client": "^5.22.0",
+    "@sentry/node": "^8.26.0",
+    "bullmq": "^5.7.7",
+    "cookie": "^0.6.0",
+    "ioredis": "^5.4.1",
+    "jsonwebtoken": "^9.0.2",
+    "next": "13.5.6",
+    "openai": "^4.57.0",
+    "pino": "^9.4.0",
+    "react": "18.2.0",
+    "react-dom": "18.2.0",
+    "swr": "^2.2.5",
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "@types/jsonwebtoken": "^9.0.6",
+    "@types/node": "20.11.30",
+    "@types/node-fetch": "^2.6.12",
+    "@types/react": "18.2.47",
+    "@types/react-dom": "18.2.18",
+    "autoprefixer": "^10.4.19",
+    "eslint": "^8.57.0",
+    "eslint-config-next": "13.5.6",
+    "postcss": "^8.4.35",
+    "prisma": "^5.19.1",
+    "tailwindcss": "^3.4.10",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.4.5",
+    "vitest": "^2.0.5"
+  }
+}
